@@ -215,23 +215,40 @@ impl SolutionMoveZeroes {
     }
 
     pub fn move_zeroes(nums: &mut Vec<i32>) -> () {
-        let mut indices = HashSet::new();
         let n = nums.len();
-        let mut i= 0;
-        while i < n {
-            if nums[i] == 0 {
-                indices.insert(i);
-            }
-            i += 1;
-        }
-        // All zeroes
-        if (indices.len() == n) {
+
+        // Base case
+        if n < 2 {
             return
         }
-        i = n-1;
-        for idx in indices.iter() {
-            SolutionMoveZeroes::swap(nums, i, *idx);
-            i -= 1;
+
+        // ptr is what we use to walk through vector
+        // fz will be location of first zero in the set of zeroes we're tracking
+        // lz will be the location of the last zero in the set of zeroes we're tracking
+        let mut ptr = 0;
+        let mut fz = n;
+        let mut lz = n;
+
+
+        while ptr < n {
+            if nums[ptr] == 0 {
+                if lz == n {
+                    fz = ptr;
+                    lz = ptr;
+                }
+                else {
+                    lz = ptr;
+                }
+            }
+            else {                  // nums[ptr] != 0
+                if lz == n {}
+                else {
+                    SolutionMoveZeroes::swap(nums, fz, ptr);
+                    fz += 1;
+                    lz += 1;
+                }
+            }
+            ptr += 1;
         }
     }
 }
