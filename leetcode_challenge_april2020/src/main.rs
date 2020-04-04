@@ -73,6 +73,11 @@ fn main() {
     println!("Max-backward is {:?}", SolutionMaximumSubarray::min_backward(&v1));
     println!("Max-subarray is {}", SolutionMaximumSubarray::max_sub_array(v1));
 
+    let mut v1 = vec![0,1,0,3,12];
+    println!("Array: {:?}", v1);
+    SolutionMoveZeroes::move_zeroes(&mut v1);
+    println!("  ---> {:?}", v1);
+
 }
 
 struct SolutionSingleNumber {}
@@ -197,5 +202,36 @@ impl SolutionMaximumSubarray {
         }
         newv[i] = newv[i + 1] + v[i];
         return newv;
+    }
+}
+
+struct SolutionMoveZeroes {}
+
+impl SolutionMoveZeroes {
+    fn swap(nums: &mut Vec<i32>, i: usize, j: usize) -> () {
+        let mut tmp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = tmp;
+    }
+
+    pub fn move_zeroes(nums: &mut Vec<i32>) -> () {
+        let mut indices = HashSet::new();
+        let n = nums.len();
+        let mut i= 0;
+        while i < n {
+            if nums[i] == 0 {
+                indices.insert(i);
+            }
+            i += 1;
+        }
+        // All zeroes
+        if (indices.len() == n) {
+            return
+        }
+        i = n-1;
+        for idx in indices.iter() {
+            SolutionMoveZeroes::swap(nums, i, *idx);
+            i -= 1;
+        }
     }
 }
