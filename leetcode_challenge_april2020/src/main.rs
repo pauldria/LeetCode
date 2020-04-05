@@ -78,6 +78,11 @@ fn main() {
     SolutionMoveZeroes::move_zeroes(&mut v1);
     println!("  ---> {:?}", v1);
 
+    let mut v1 = vec![7,6,4,3,1];
+    println!("Array: {:?}", v1);
+    let profit = SolutionBuySell::max_profit(v1);
+    println!("  ---> {}", profit);
+
 }
 
 struct SolutionSingleNumber {}
@@ -250,5 +255,51 @@ impl SolutionMoveZeroes {
             }
             ptr += 1;
         }
+    }
+}
+
+struct SolutionBuySell {}
+
+impl SolutionBuySell {
+    pub fn max_profit(prices: Vec<i32>) -> i32 {
+
+        let n = prices.len();
+        if n <= 1 {
+            return 0;
+        }
+
+        let mut total_profit = 0;
+
+        let mut is_buying = false;
+        let mut bought_price = 0;
+        // Do the base case - we only buy if the next price is higher
+        if prices[1] > prices[0] {
+            is_buying = true;
+            bought_price = prices[0];
+        }
+
+        let mut i = 1;
+        while i < n-1 {
+            if is_buying {
+                if prices[i+1] < prices[i] {
+                    is_buying = false;
+                    total_profit += prices[i] - bought_price;
+                }
+                else { }                        // Do nothing, price is still increasing
+            }
+            else {
+                if prices[i+1] > prices[i] {
+                    is_buying = true;
+                    bought_price = prices[i];
+                }
+                else { }                        // Do nothing, price is still decreasing
+            }
+            i += 1;
+        }
+        // Don't forget the end!
+        if is_buying {
+            total_profit += prices[i] - bought_price;
+        }
+        return total_profit;
     }
 }
