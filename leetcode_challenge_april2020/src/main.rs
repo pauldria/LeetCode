@@ -3,7 +3,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::cmp::min;
-use std::cmp::max;
 use std::i32;
 
 fn main() {
@@ -78,11 +77,42 @@ fn main() {
     SolutionMoveZeroes::move_zeroes(&mut v1);
     println!("  ---> {:?}", v1);
 
-    let mut v1 = vec![7,6,4,3,1];
+    let v1 = vec![7,6,4,3,1];
     println!("Array: {:?}", v1);
     let profit = SolutionBuySell::max_profit(v1);
     println!("  ---> {}", profit);
 
+    let s = "samantha";
+    let mut s_chars: Vec<char> = s.chars().collect::<Vec<char>>();
+    s_chars.sort();
+    let s_sorted: String = s_chars.iter().collect();
+    println!("{} --> {}", s, s_sorted);
+
+    let v1: Vec<String> = vec![String::from("eat"),
+                               String::from("tea"),
+                               String::from("tan"),
+                               String::from("ate"),
+                               String::from("nat"),
+                               String::from("bat")];
+    println!("{:?}", v1);
+    let v1_grouped = SolutionGroupAnagrams::group_anagrams(v1);
+    println!("{:?}", v1_grouped);
+
+    let v1: Vec<String> = vec![String::from("eat")];
+    println!("{:?}", v1);
+    let v1_grouped = SolutionGroupAnagrams::group_anagrams(v1);
+    println!("{:?}", v1_grouped);
+
+    let v1: Vec<String> = vec![String::from(""),
+                               String::from("")];
+    println!("{:?}", v1);
+    let v1_grouped = SolutionGroupAnagrams::group_anagrams(v1);
+    println!("{:?}", v1_grouped);
+
+    let v1: Vec<String> = Vec::new();
+    println!("{:?}", v1);
+    let v1_grouped = SolutionGroupAnagrams::group_anagrams(v1);
+    println!("{:?}", v1_grouped);
 }
 
 struct SolutionSingleNumber {}
@@ -214,7 +244,7 @@ struct SolutionMoveZeroes {}
 
 impl SolutionMoveZeroes {
     fn swap(nums: &mut Vec<i32>, i: usize, j: usize) -> () {
-        let mut tmp = nums[i];
+        let tmp = nums[i];
         nums[i] = nums[j];
         nums[j] = tmp;
     }
@@ -301,5 +331,50 @@ impl SolutionBuySell {
             total_profit += prices[i] - bought_price;
         }
         return total_profit;
+    }
+}
+
+struct SolutionGroupAnagrams {}
+
+impl SolutionGroupAnagrams {
+    pub fn sort_string(str:String) -> String {
+        let mut s_chars: Vec<char> = str.chars().collect::<Vec<char>>();
+        s_chars.sort();
+        return s_chars.iter().collect();
+    }
+
+    pub fn group_anagrams(strs: Vec<String>) -> Vec<Vec<String>> {
+        let mut canonical: Vec<(String, String)> = Vec::new();
+
+        // First, we map each string into its canonical form
+        // What do we do with duplicates???
+        for s in strs.into_iter() {
+            let s_key = s.clone();
+            canonical.push((s_key, SolutionGroupAnagrams::sort_string(s)));
+        }
+        let mut dict_grouped: HashMap<&String, Vec<String>> = HashMap::new();
+
+        for (k, v) in canonical.iter() {
+            let k_val = k.clone();
+            let entry = dict_grouped.get(v);
+
+            // If we don't have a key available, we initialize with a new
+            if entry.is_none() {
+                dict_grouped.insert(v, Vec::new());
+            }
+            else { }
+            let foo = dict_grouped.get_mut(v);
+            match foo {
+                None => (),
+                Some(val) => val.push(k_val)
+            }
+        }
+
+        let mut grouped_anagrams: Vec<Vec<String>> = Vec::new();
+        for (_k, v) in dict_grouped.into_iter() {
+            grouped_anagrams.push(v);
+        }
+
+        return grouped_anagrams;
     }
 }
