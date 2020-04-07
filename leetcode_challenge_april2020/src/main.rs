@@ -1,8 +1,8 @@
 // https://leetcode.com/explore/challenge/card/30-day-leetcoding-challenge/528/week-1/3283/
 
+use std::cmp::min;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::cmp::min;
 use std::i32;
 
 fn main() {
@@ -113,6 +113,17 @@ fn main() {
     println!("{:?}", v1);
     let v1_grouped = SolutionGroupAnagrams::group_anagrams(v1);
     println!("{:?}", v1_grouped);
+
+    let v = vec![String::from("foo"), String::from("bar")];
+    for item in v.iter() {
+        let s = item.clone();
+        println!("{} --> {}", item, s);
+    }
+
+    let mut v1 = vec![1,1,1,2,2];
+    println!("Array: {:?}", v1);
+    let result = SolutionCountingElements::count_elements(v1);
+    println!("  ---> {}", result);
 }
 
 struct SolutionSingleNumber {}
@@ -354,6 +365,8 @@ impl SolutionGroupAnagrams {
         }
         let mut dict_grouped: HashMap<&String, Vec<String>> = HashMap::new();
 
+        // Now, we go through the pairs and collect them all
+        // For each canonical representation, we grow the vector of possibilities
         for (k, v) in canonical.iter() {
             let k_val = k.clone();
             let entry = dict_grouped.get(v);
@@ -376,5 +389,30 @@ impl SolutionGroupAnagrams {
         }
 
         return grouped_anagrams;
+    }
+}
+
+struct SolutionCountingElements {}
+
+impl SolutionCountingElements {
+    pub fn count_elements(arr: Vec<i32>) -> i32 {
+        let mut counts   : HashMap<i32, i32> = HashMap::new();
+        let mut counts_pp: HashMap<i32, i32> = HashMap::new();
+
+        for i in arr.into_iter() {
+            let val = counts.entry(i).or_insert(0);
+            *val += 1;
+            let val = counts_pp.entry(i+1).or_insert(0);
+            *val += 1;
+        }
+
+        let mut total_count = 0;
+        for (k, v) in counts.iter() {
+            if let Some(v) = counts_pp.get(k) {
+                total_count += *v;
+            }
+        }
+
+        return total_count;
     }
 }
