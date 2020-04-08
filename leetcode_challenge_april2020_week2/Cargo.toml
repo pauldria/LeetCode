@@ -1,0 +1,9 @@
+[package]
+name = "leetcode_challenge_april2020_week2"
+version = "0.1.0"
+authors = ["pauldria <paul@myraff.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
