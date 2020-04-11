@@ -263,41 +263,45 @@ struct SolutionLargestDiameter { }
 
 impl SolutionLargestDiameter {
     pub fn diameter_of_binary_tree(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+        return SolutionLargestDiameter::diameter_of_binary_tree_ref(&root);
+    }
+    fn diameter_of_binary_tree_ref(root: &Option<Rc<RefCell<TreeNode>>>) -> i32 {
         match root {
             None => 0,
             Some(val) => {
-                let val = val.borrow();
-                let max_diam_l = SolutionLargestDiameter::diameter_of_binary_tree(val.clone().left);
-                let max_diam_r = SolutionLargestDiameter::diameter_of_binary_tree(val.clone().right);
+                let val_ptr = val.borrow();
+                let max_diam_l = SolutionLargestDiameter::diameter_of_binary_tree_ref(&val_ptr.left);
+                let max_diam_r = SolutionLargestDiameter::diameter_of_binary_tree_ref(&val_ptr.right);
                 let max_diam_sub = max(max_diam_l, max_diam_r);
                 let mut max_l_path_l = 0;
                 let mut max_l_path_r = 0;
                 let mut max_r_path_l = 0;
                 let mut max_r_path_r = 0;
-                match val.clone().left {
+                match &val_ptr.left {
                     None => {
-                        match val.clone().right {
+                        match &val_ptr.right {
                             None => 0,
                             Some(val_right) => {
                                 max_l_path_r = SolutionLargestDiameter::longest_left_branch(Some(val_right));
-                                max_r_path_r = SolutionLargestDiameter::longest_right_branch(Some(val_right.clone()));
+                                max_r_path_r = SolutionLargestDiameter::longest_right_branch(Some(val_right));
                                 return max(max_diam_sub, 1 + max(max_l_path_r, max_r_path_r));
                             }
                         }
                     },
                     Some(val_left) => {
-                        match val.clone().right {
+                        match &val_ptr.right {
                             None => {
                                 max_l_path_l = SolutionLargestDiameter::longest_left_branch(Some(val_left));
-                                max_r_path_l = SolutionLargestDiameter::longest_right_branch(Some(val_left.clone()));
+                                max_r_path_l = SolutionLargestDiameter::longest_right_branch(Some(val_left));
                                 return max(max_diam_sub, 1 + max(max_l_path_l, max_r_path_l));
                             },
                             Some(val_right) => {
                                 max_l_path_r = SolutionLargestDiameter::longest_left_branch(Some(val_right));
-                                max_r_path_r = SolutionLargestDiameter::longest_right_branch(Some(val_right.clone()));
+                                max_r_path_r = SolutionLargestDiameter::longest_right_branch(Some(val_right));
                                 max_l_path_l = SolutionLargestDiameter::longest_left_branch(Some(val_left));
-                                max_r_path_l = SolutionLargestDiameter::longest_right_branch(Some(val_left.clone()));
-                                return max(max_diam_sub, 2 + max(max_l_path_l, max_r_path_l) + max(max_l_path_r, max_r_path_r));
+                                max_r_path_l = SolutionLargestDiameter::longest_right_branch(Some(val_left));
+                                return max(max_diam_sub, 2 + max(max_l_path_l, max_r_path_l)
+                                                                   + max(max_l_path_r, max_r_path_r));
                             }
                         }
                     }
@@ -306,26 +310,36 @@ impl SolutionLargestDiameter {
         }
     }
 
-    fn longest_left_branch(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+    fn longest_left_branch(root: Option<&Rc<RefCell<TreeNode>>>) -> i32 {
         match root {
             None => 0,
             Some(val) => {
-                let val = val.borrow();
-                let max_l = SolutionLargestDiameter::longest_left_branch(val.clone().left);
-                let max_r = SolutionLargestDiameter::longest_right_branch(val.clone().left);
-                return max(max_l, max_r);
+                let val_ptr = val.borrow();
+                match &val_ptr.left {
+                    None => 0,
+                    Some(val_left) => {
+                        let max_l = SolutionLargestDiameter::longest_left_branch(Some(val_left));
+                        let max_r = SolutionLargestDiameter::longest_right_branch(Some(val_left));
+                        return 1 + max(max_l, max_r);
+                    }
+                }
             }
         }
     }
 
-    fn longest_right_branch(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+    fn longest_right_branch(root: Option<&Rc<RefCell<TreeNode>>>) -> i32 {
         match root {
             None => 0,
             Some(val) => {
-                let val = val.borrow();
-                let max_l = SolutionLargestDiameter::longest_left_branch(val.clone().right);
-                let max_r = SolutionLargestDiameter::longest_right_branch(val.clone().right);
-                return max(max_l, max_r);
+                let val_ptr = val.borrow();
+                match &val_ptr.right {
+                    None => 0,
+                    Some(val_right) => {
+                        let max_l = SolutionLargestDiameter::longest_left_branch(Some(val_right));
+                        let max_r = SolutionLargestDiameter::longest_right_branch(Some(val_right));
+                        return 1 + max(max_l, max_r);
+                    }
+                }
             }
         }
     }
