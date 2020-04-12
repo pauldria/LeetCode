@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::cmp::max;
 use std::rc::Rc;
+use std::collections::BinaryHeap;
 
 fn main() {
     let v: Option<Box<ListNode>> = Some(Box::new(ListNode {
@@ -342,5 +343,27 @@ impl SolutionLargestDiameter {
                 }
             }
         }
+    }
+}
+
+struct SolutionLastStone { }
+
+impl SolutionLastStone {
+    pub fn last_stone_weight(stones: Vec<i32>) -> i32 {
+        let mut heap: BinaryHeap<i32> = BinaryHeap::new();
+        for val in stones.into_iter() {
+            heap.push(val);
+        }
+        while heap.len() > 1 {
+            let first  = heap.pop().unwrap();
+            let second = heap.pop().unwrap();
+            if first != second {
+                heap.push(first - second);
+            }
+        }
+        if heap.len() == 0 {
+            return 0
+        }
+        return heap.pop().unwrap();
     }
 }
