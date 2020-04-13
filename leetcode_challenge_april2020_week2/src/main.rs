@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::cmp::max;
 use std::rc::Rc;
 use std::collections::BinaryHeap;
+use std::collections::HashMap;
 
 fn main() {
     let v: Option<Box<ListNode>> = Some(Box::new(ListNode {
@@ -64,6 +65,22 @@ fn main() {
     println!("v:i64 = {}", v);
     println!("(v + v)/2 = {}", (v + v)/2);
     println!("(v + v)/2 as i32 = {}", ((v + v)/2) as i32);
+
+    println!("----------------");
+    println!("Contiguous Array");
+    println!("----------------");
+    let v = vec![0,1,0];
+    println!("{:?}", v);
+    let result = SolutionContiguousArray::find_max_length(v);
+    println!("  --> {}", result);
+    let v = vec![0,0,0,1,1,0,0,1,1];
+    println!("{:?}", v);
+    let result = SolutionContiguousArray::find_max_length(v);
+    println!("  --> {}", result);
+    let v = vec![0,1,0,1,0,1,0,1,1];
+    println!("{:?}", v);
+    let result = SolutionContiguousArray::find_max_length(v);
+    println!("  --> {}", result);
 }
 
 // Definition for singly-linked list.
@@ -365,5 +382,72 @@ impl SolutionLastStone {
             return 0
         }
         return heap.pop().unwrap();
+    }
+}
+
+struct SolutionContiguousArray { }
+
+impl SolutionContiguousArray {
+    pub fn find_max_length(nums: Vec<i32>) -> i32 {
+        let mut rolling_imbalance = 0;
+        let mut imbalance_index:HashMap<i32, usize> = HashMap::new();
+        let n = nums.len();
+        let mut cur_max = 0;
+        for i in (0..n).rev() {
+            match nums.get(i) {
+                None           => (),
+                Some(v) => {
+                    rolling_imbalance += if *v == 1 {1} else {-1};
+                    if !imbalance_index.contains_key(&rolling_imbalance) {
+                        imbalance_index.insert(rolling_imbalance, i);
+                    }
+                }
+            }
+        }
+        let total_imbalance = rolling_imbalance;
+        // Edge case - does everything work?
+        if total_imbalance == 0 {
+            return n as i32;
+        }
+        rolling_imbalance = 0;
+        println!("{:?}", imbalance_index);
+        // Edge case - we take the first set
+        let need_to_account = total_imbalance;
+        match imbalance_index.get(&need_to_account) {
+            None => (),
+            Some(latest_index) => {
+                println!("[BASE] Option: start to {} (need to account {})", latest_index, need_to_account);
+                if *latest_index > cur_max {
+                    cur_max = *latest_index;
+                }
+            }
+        }
+        for i in (0..n) {
+            match nums.get(i) {
+                None => (),
+                Some(v) => {
+                    rolling_imbalance += if *v == 1 {1} else {-1};
+                    // First, check if it works to have just the first i
+                    let need_to_account = total_imbalance - rolling_imbalance;
+                    // In this case, we can go all the way to the end
+                    if need_to_account == 0 {
+                        cur_max = if n-i-1 > cur_max {n-i-1} else {cur_max};
+                    }
+                    match imbalance_index.get(&need_to_account) {
+                        None => (),
+                        Some(latest_index) => {
+                            println!("Option: {} to {} (need to account {})", i, latest_index, need_to_account);
+                            if *latest_index >= i {
+                                if *latest_index - i - 1 > cur_max {
+                                    cur_max = latest_index - i - 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // Edge case - what happens if we just choose a starting subset?
+        return cur_max as i32;
     }
 }
