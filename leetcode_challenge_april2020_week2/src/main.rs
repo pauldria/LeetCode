@@ -81,6 +81,15 @@ fn main() {
     println!("{:?}", v);
     let result = SolutionContiguousArray::find_max_length(v);
     println!("  --> {}", result);
+
+    println!("-------------");
+    println!("String Shifts");
+    println!("-------------");
+    let s = "abcdefg";
+    let v = vec![vec![1,1], vec![1,1], vec![0,2], vec![1,3]];
+    println!("{}", s);
+    println!("{:?}", v);
+    println!("{}", SolutionStringShifts::string_shift(String::from(s), v));
 }
 
 // Definition for singly-linked list.
@@ -449,5 +458,61 @@ impl SolutionContiguousArray {
         }
         // Edge case - what happens if we just choose a starting subset?
         return cur_max as i32;
+    }
+}
+
+struct SolutionStringShifts { }
+
+impl SolutionStringShifts {
+    fn shift_left(s: String, l:i32) -> String {
+        let n = s.len() as i32;
+        let mut l_shift = (l as i32) % n;
+        while l_shift < 0 {
+            l_shift += n;
+        }
+        let l_shift = l_shift as usize;
+        let n       = n as usize;
+        let first_part = String::from(&s[l_shift..n]);
+        let second_part = &s[0..l_shift];
+        return first_part + second_part
+    }
+
+    fn shift_right(s: String, r:i32) -> String {
+        let n = s.len() as i32;
+        let mut r_shift = (r as i32) % n;
+        while r_shift < 0 {
+            r_shift += n;
+        }
+        let r_shift = r_shift as usize;
+        let n       = n as usize;
+        let first_part = String::from(&s[(n - r_shift)..n]);
+        let second_part = &s[0..(n - r_shift)];
+        return first_part + second_part
+    }
+
+    pub fn string_shift(s: String, shift: Vec<Vec<i32>>) -> String {
+        let mut s_mut = s;
+        for v in shift {
+            match v.get(0) {
+                None => (),
+                Some(v0) => {
+                    match v.get(1) {
+                        None => (),
+                        Some(v1) => {
+                            if *v0 == 0 {
+                                s_mut = SolutionStringShifts::shift_left(s_mut, *v1);
+                            }
+                            else if *v0 == 1 {
+                                s_mut = SolutionStringShifts::shift_right(s_mut, *v1);
+                            }
+                            else {
+                                panic!("You told me the first element would either be 0 or 1!")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return s_mut;
     }
 }
