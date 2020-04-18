@@ -1,14 +1,23 @@
+use std::collections::HashSet;
+
 fn main() {
     let v = vec![5,4];
     println!("{:?}", v);
     println!(" --> {:?}", SolutionProductExceptSelf::product_except_self(v));
 
-    //let s = String::from("(())((())()()(*)(*()(())())())()()((()())((()))(*");
-    let s = String::from("((*)(*))((*");
+    let s = String::from("(())((())()()(*)(*()(())())())()()((()())((()))(*");
+    //let s = String::from("((*)(*))((*");
     //let s = String::from("(*))");
     println!("{}", s);
     println!(" --> {}", SolutionValidParens::check_valid_string(s));
 
+    let mut v = Vec::new();
+    v.push(vec!['1','1','0','0','0']);
+    v.push(vec!['1','1','0','0','0']);
+    v.push(vec!['0','0','1','0','0']);
+    v.push(vec!['0','0','0','1','1']);
+    println!("{:?}", v);
+    println!(" --> {}", SolutionNumIslands::num_islands(v));
 }
 
 struct SolutionProductExceptSelf { }
@@ -46,81 +55,126 @@ struct SolutionValidParens { }
 
 impl SolutionValidParens {
     pub fn check_valid_string(s: String) -> bool {
-        let n = s.len();
-        let mut rolling_sum: Vec<i32> = vec![0; n];
-        let mut num_stars: Vec<i32>   = vec![0; n];
-        let mut max_pos_needed = 0;
-        if n == 0 {
-            return true;
-        }
-        else if n == 1 {
-            return (s.as_str() == "*");
-        }
-
-        // Start the vectors
-        match s.chars().next().unwrap() {
-            '(' => {
-                rolling_sum[0] = 1;
-            },
-            ')' => {
-                rolling_sum[0] = -1;
-            },
-            '*' => {
-                num_stars[0] = 1;
-            }
-            _ => ()
-        }
-
-        if rolling_sum[0] < 0 {
-            // We have enough stars to compensate, but we need to track
-            if num_stars[0] >= -1*rolling_sum[0] {
-                let disc = num_stars[0] + rolling_sum[0];
-                max_pos_needed = if disc > max_pos_needed { disc } else { max_pos_needed};
-            }
-            else {
-                return false;
-            }
-        }
-
-        let mut idx: usize = 1;
-
-        for c in s[1..n].chars() {
-            // We must continue to propagate regardless!
-            rolling_sum[idx] = rolling_sum[idx-1];
-            num_stars[idx]   = num_stars[idx-1];
+        let mut running_count = 0;
+        let mut num_stars_available = 0;
+        // Let's go forward
+        for c in s.chars() {
             match c {
                 '(' => {
-                    rolling_sum[idx] = rolling_sum[idx-1] + 1;
-                },
-                ')' => {
-                    rolling_sum[idx] = rolling_sum[idx-1] - 1;
-                },
-                '*' => {
-                    num_stars[idx]   = num_stars[idx-1]  + 1;
+                    running_count += 1;
                 }
-                _ => ()
+                ')' => {
+                    running_count -= 1;
+                }
+                '*' => {
+                    num_stars_available += 1;
+                }
+                _   => { }
             }
-            println!("{} {:?} {:?}", idx, rolling_sum, num_stars);
-            if rolling_sum[idx] < 0 {
-                // We have enough stars to compensate, but we need to track
-                if num_stars[idx] >= -1*rolling_sum[idx] {
-                    let disc = num_stars[idx] + rolling_sum[idx];
-                    max_pos_needed = if disc > max_pos_needed
-                                        { disc }
-                                     else
-                                        { max_pos_needed };
+            if running_count < 0 {
+                if num_stars_available > 0 {
+                    num_stars_available -= 1;
+                    running_count += 1;
                 }
                 else {
                     return false;
                 }
             }
-
-            idx += 1;
         }
-        // Now, we need to make sure that we can reconcile everything.
-        // We need to understand how many * we had to turn into (, and then
-        // see if we have enough * left to turn into )
-        // At this point, we know rolling_sum[n-1] >= 0
-        return num_stars[n-1] - max_pos_needed >= rolling_sum[n-1];
+
+        // Let's go backward
+        running_count = 0;
+        num_stars_available = 0;
+        for c in s.chars().rev() {
+            match c {
+                '(' => {
+                    running_count -= 1;
+                }
+                ')' => {
+                    running_count += 1;
+                }
+                '*' => {
+                    num_stars_available += 1;
+                }
+                _   => { }
+            }
+            if running_count < 0 {
+                if num_stars_available > 0 {
+                    num_stars_available -= 1;
+                    running_count += 1;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+}
+
+struct SolutionNumIslands { }
+
+impl SolutionNumIslands {
+    fn withinOne(pt: (i32, i32), points: &Vec<(i32, i32)>) -> bool {
+        for (x, y) in points.iter() {
+            if (pt.0 + 1 == *x && pt.1 == *y) || (pt.0 - 1 == *x && pt.1 == *y) {
+                return true;
+            }
+            if (pt.0 == *x && pt.1 + 1 == *y) || (pt.0 == *x && pt.1 - 1 == *y) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    pub fn num_islands(grid: Vec<Vec<char>>) -> i32 {
+        let mut islands: HashSet<Vec<(i32, i32)>> = HashSet::new();
+        let n_rows = grid.len();
+        if n_rows == 0 {
+            return 0;
+        }
+        let n_cols = grid[0].len();
+        if n_cols == 0 {
+            return 0;
+        }
+
+
+        for i in (0..n_rows) {
+            for j in (0..n_cols) {
+                let i_32 = i as i32;
+                let j_32 = j as i32;
+                if grid[i][j] == '1' {
+                    println!("Checking ({}, {})", i_32, j_32);
+                    // Check if adjacent to existing island(s)
+                    let mut adjacent_islands:  HashSet<Vec<(i32, i32)>> = islands.clone();
+                    adjacent_islands.retain(|cur_island| {
+                        SolutionNumIslands::withinOne((i_32, j_32 as i32), cur_island)
+                    });
+                    islands.retain(|cur_island| {
+                        ! SolutionNumIslands::withinOne((i_32, j_32 as i32), cur_island)
+                    });
+
+                    println!("  Adjacent islands: {:?}", adjacent_islands);
+                    println!("           Islands: {:?}", islands);
+
+                    if adjacent_islands.len() > 0 {
+                        let mut new_island: Vec<(i32, i32)> = Vec::new();
+                        new_island.push((i_32, j_32));
+                        for cur_island in adjacent_islands.iter() {
+                            for pt in cur_island.into_iter() {
+                                new_island.push(*pt);
+                            }
+                        }
+                        islands.insert(new_island);
+                    }
+                    // A brand new island!
+                    else {
+                        islands.insert(vec![(i_32, j_32)]);
+                    }
+                    println!("     Final islands: {:?}", islands);
+                }
+            }
+        }
+        return islands.len() as i32;
     }
 }
