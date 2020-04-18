@@ -1,3 +1,4 @@
+use std::cmp::min;
 use std::collections::HashSet;
 
 fn main() {
@@ -18,6 +19,10 @@ fn main() {
     v.push(vec!['0','0','0','1','1']);
     println!("{:?}", v);
     println!(" --> {}", SolutionNumIslands::num_islands(v));
+
+    let mut grid = vec![vec![1,3,1], vec![1,5,1], vec![4,2,1]];
+    println!("{:?}", grid);
+    println!(" --> {}", SolutionMinPath::min_path_sum(grid));
 }
 
 struct SolutionProductExceptSelf { }
@@ -176,5 +181,35 @@ impl SolutionNumIslands {
             }
         }
         return islands.len() as i32;
+    }
+}
+
+struct SolutionMinPath { }
+
+impl SolutionMinPath {
+    pub fn min_path_sum(grid: Vec<Vec<i32>>) -> i32 {
+        let n_i = grid.len();
+        if n_i == 0 {
+            return 0;
+        }
+        let n_j = grid[0].len();
+        if n_j == 0 {
+            return 0;
+        }
+        let mut result = vec![vec![-1; n_j]; n_i];
+        result[0][0] = grid[0][0];
+        for j in 1..n_j {
+            result[0][j] = result[0][j-1] + grid[0][j];
+        }
+        for i in 1..n_i {
+            result[i][0] = result[i-1][0] + grid[i][0];
+        }
+        for i in 1..n_i {
+            for j in 1..n_j {
+                let m = min(result[i-1][j], result[i][j-1]);
+                result[i][j] = m + grid[i][j];
+            }
+        }
+        return result[n_i-1][n_j-1];
     }
 }
