@@ -23,6 +23,10 @@ fn main() {
     let mut grid = vec![vec![1,3,1], vec![1,5,1], vec![4,2,1]];
     println!("{:?}", grid);
     println!(" --> {}", SolutionMinPath::min_path_sum(grid));
+
+    let mut array = vec![4,5,6,7,0,1,2];
+    println!("{:?}", array);
+    println!(" --> {}", SolutionSearchRotatedArray::search(array, 1));
 }
 
 struct SolutionProductExceptSelf { }
@@ -211,5 +215,124 @@ impl SolutionMinPath {
             }
         }
         return result[n_i-1][n_j-1];
+    }
+}
+
+struct SolutionSearchRotatedArray { }
+
+impl SolutionSearchRotatedArray {
+    pub fn search(nums: Vec<i32>, target: i32) -> i32 {
+        let n = nums.len();
+        if n == 0 {
+            return -1;
+        }
+        if n == 1 {
+            return if nums[0] == target { 0 } else { -1 };
+        }
+        if n == 2 {
+            if nums[0] == target {
+                return 0;
+            }
+            else if nums[1] == target {
+                return 1;
+            }
+            else {
+                return -1;
+            }
+        }
+
+        let mut l_ptr: usize = 0;
+        let mut r_ptr = n-1;
+        let mut ptr = (r_ptr - l_ptr) / 2;
+        let mut cur_max = nums[ptr];
+        let mut idx_max = ptr;
+
+        // In this case, we need to look right
+        if nums[r_ptr] < nums[ptr] {
+            println!("[Right] {} {} {}", l_ptr, ptr, r_ptr);
+            loop {
+                println!("  {} {} {}", l_ptr, ptr, r_ptr);
+                if nums[ptr] > cur_max {
+                    cur_max = nums[ptr];
+                    idx_max = ptr;
+                }
+                if nums[l_ptr] < nums[ptr] {
+                    l_ptr = ptr;
+                    ptr = l_ptr + (r_ptr - l_ptr) / 2;
+                }
+                else if nums[l_ptr] > nums[ptr] {
+                    r_ptr = ptr;
+                    ptr = l_ptr + (r_ptr - l_ptr) / 2;
+                }
+                else {
+                    if nums[r_ptr] > cur_max {
+                        cur_max = nums[r_ptr];
+                        idx_max = r_ptr;
+                    }
+                    break;
+                }
+            }
+        }
+        // In this case, we need to look left
+        else if nums[r_ptr] > nums[ptr] {
+            println!("[Left] {} {} {}", l_ptr, ptr, r_ptr);
+            cur_max = nums[r_ptr];
+            idx_max = r_ptr;
+            loop {
+                println!("  {} {} {}", l_ptr, ptr, r_ptr);
+                if nums[ptr] > cur_max {
+                    cur_max = nums[ptr];
+                    idx_max = ptr;
+                }
+                if nums[l_ptr] < nums[ptr] {
+                    l_ptr = ptr;
+                    ptr = l_ptr + (r_ptr - l_ptr) / 2;
+                }
+                else if nums[l_ptr] > nums[ptr] {
+                    r_ptr = ptr;
+                    ptr = l_ptr + (r_ptr - l_ptr) / 2;
+                }
+                else {
+                    if nums[r_ptr] > cur_max {
+                        cur_max = nums[r_ptr];
+                        idx_max = r_ptr;
+                    }
+                    break;
+                }
+            }
+        }
+        else {
+            panic!("You told me that all elements of the array would be unique!");
+        }
+
+        // Now we just do plain binary search, starting from idx_max+1 to .. to idx_max
+        // Gotta mod by n to make sure we maintain our bounds appropriately.
+        l_ptr = (idx_max + 1) % n;
+        r_ptr = idx_max;
+        ptr = (l_ptr + (((r_ptr + n) - l_ptr) % n)/2) % n;
+        println!("Time to search");
+        while l_ptr != ptr {
+            println!("  {} {} {}", l_ptr, ptr, r_ptr);
+            if nums[ptr] == target {
+                return ptr as i32;
+            }
+            else if nums[ptr] < target {
+                l_ptr = ptr;
+                ptr = (l_ptr + (((r_ptr + n) - l_ptr) % n)/2) % n;
+            }
+            else {
+                r_ptr = ptr;
+                ptr = (l_ptr + (((r_ptr + n) - l_ptr) % n)/2) % n;
+            }
+        }
+        if nums[l_ptr] == target {
+            return l_ptr as i32;
+        }
+        else if nums[r_ptr] == target {
+            return r_ptr as i32;
+        }
+        else {
+            return -1;
+        }
     }
 }
